@@ -1,2 +1,0 @@
-# .github
-Introduction to oneTakeda
