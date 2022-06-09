@@ -1,4 +1,8 @@
 # This is a starter workflow to help get you started with SonarCloud Scanning
+
+# Required Secrets:
+#   SONAR_TOKEN
+
 name: SonarCould Scan
 on:
 
