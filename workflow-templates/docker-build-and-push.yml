@@ -1,0 +1,40 @@
+# This is a starter workflow to help you get started with building Docker Containers using Actions
+
+name: Build and Push
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-push"
+  build-and-push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3       
+
+      - name: Login to JFrog Artifactory
+        uses: docker/login-action@v2
+        with:
+          registry: takedaawsuseast-aspire-docker-local.jfrog.io
+          username: ${{ secrets.JFROG_USER }}
+          password: ${{ secrets.JFROG_PASSWORD }}
+      
+      - name: Build and push Docker Image
+        uses: docker/build-push-action@v2
+        with:
+         context: .
+         push: true
+         file: ./path/to/Dockerfile
+         tags: takedaawsuseast-example-docker-local.jfrog.io/example-docker-local/example:$GITHUB_SHA
