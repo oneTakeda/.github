@@ -1,0 +1,10 @@
+{
+    "name": "oneTakeda Docker Workflow",
+    "description": "oneTakeda Organization Docker starter workflow.",
+    "categories": [
+        "Docker"
+    ],
+    "filePatterns": [
+        "^Dockerfile"
+    ]
+}
