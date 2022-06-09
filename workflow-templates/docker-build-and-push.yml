@@ -24,17 +24,21 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3       
 
+      # Log in to the Docker Registry
+      # Be sure to update with your project's actual registry replacing "EXAMPLE"
       - name: Login to JFrog Artifactory
         uses: docker/login-action@v2
         with:
-          registry: takedaawsuseast-aspire-docker-local.jfrog.io
+          registry: takedaawsuseast-EXAMPLE-docker-local.jfrog.io
           username: ${{ secrets.JFROG_USER }}
           password: ${{ secrets.JFROG_PASSWORD }}
       
+      # Build and Push the Image
+      # Be sure to update with your project's actual naming replacing "EXAMPLE"
       - name: Build and push Docker Image
         uses: docker/build-push-action@v2
         with:
          context: .
          push: true
          file: ./path/to/Dockerfile
-         tags: takedaawsuseast-example-docker-local.jfrog.io/example-docker-local/example:$GITHUB_SHA
+         tags: takedaawsuseast-EXAMPLE-docker-local.jfrog.io/EXAMPLE-docker-local/EXAMPLE:$GITHUB_SHA
