@@ -1,0 +1,7 @@
+{
+    "name": "oneTakeda SonarCloud Workflow",
+    "description": "oneTakeda Organization SonarCloud starter workflow.",
+    "categories": [
+        "SonarCloud"
+    ]
+}
