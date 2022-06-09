@@ -1,5 +1,9 @@
 # This is a starter workflow to help you get started with building Docker Containers using Actions
 
+# Required Secrets:
+# JFROG_USER
+# JFROG_PASSWORD
+
 name: Build and Push
 
 # Controls when the workflow will run

@@ -1,0 +1,12 @@
+{
+    "name": "oneTakeda OpenShift Deployment Workflow",
+    "description": "oneTakeda Organization OpenShift Deployment starter workflow.",
+    "categories": [
+        "Docker",
+        "OpenShift".
+        "Deployment"
+    ],
+    "filePatterns": [
+        "^Dockerfile"
+    ]
+}

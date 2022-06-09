@@ -1,0 +1,87 @@
+# This is a starter workflow to help you get started with deploying on OpenShift using Actions
+
+# Required Secrets:
+#    SERVICE_USER
+#    SERVER_URL
+#    SERVICE_TOKEN
+
+name: OpenShift Deployment
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  # push:
+  #   branches:
+  #     - $default-branch
+      
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch: 
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a deployment job and a clean-up job
+  # Replace EXAMPLE with relevant information for your app
+  # This starter workflow reflects only a single environment, but you may expand it as appropriate
+  deploy:
+    name: Application Deployment
+    environment: EXAMPLE
+    runs-on: [self-hosted,'quay.io/redhat-github-actions/runner:v1']    
+    steps:
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "mirror"
+          oc: "latest"
+          helm: "latest"
+          
+      - uses: actions/checkout@v2
+        name: Checkout this repository
+          
+      - name: Authenticate and set context
+        uses: redhat-actions/oc-login@v1
+        env:
+          OPENSHIFT_USER: ${{ secrets.SERVICE_USER }}
+          OPENSHIFT_NAMESPACE: EXAMPLE
+        with:
+          openshift_server_url: ${{ secrets.SERVER_URL }}
+          openshift_token: ${{ secrets.SERVICE_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      # Deploy the application using a Helm Chart located within the repository
+      - name: App Deploy
+        shell: bash
+        run: |
+          # Pull in any needed dependencies of the Helm Chart
+          helm dependency update
+          # Deploy or upgrade the application idempotently using "upgrade --install" so that the same command is used for an upgrade or install
+          # Use "--atomic" to wait for the deployment to successfully complete and if unsuccessful, roll back to last known good state
+          helm upgrade --install --atomic EXAMPLE path/to/helm/chart
+
+  # This job will clean up and remove the application
+  # Replace EXAMPLE with relevant configuration for your application
+  teardown:
+    name: Application Clean-up
+    environment: EXAMPLE
+    runs-on: [self-hosted,'quay.io/redhat-github-actions/runner:v1']    
+    steps:
+      - name: Install CLI tools from OpenShift Mirror
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          source: "mirror"
+          oc: "latest"
+          helm: "latest"
+          
+      - name: Authenticate and set context
+        uses: redhat-actions/oc-login@v1
+        env:
+          OPENSHIFT_USER: ${{ secrets.SERVICE_USER }}
+          OPENSHIFT_NAMESPACE: EXAMPLE
+        with:
+          openshift_server_url: ${{ secrets.SERVER_URL }}
+          openshift_token: ${{ secrets.SERVICE_TOKEN }}
+          insecure_skip_tls_verify: true
+          namespace: ${{ env.OPENSHIFT_NAMESPACE }}
+
+      - name: Prestashop Delete
+        shell: bash
+        run: |
+          helm uninstall EXAMPLE
