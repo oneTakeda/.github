@@ -1,0 +1,11 @@
+{
+    "name": "oneTakeda CloudFormation Workflow",
+    "description": "oneTakeda Organization CloudFormation starter workflow.",
+    "categories": [
+        "AWS",
+        "CloudFormation"
+    ],
+    "filePatterns": [
+        "iac/*.yml"
+    ]
+}
