@@ -1,0 +1,27 @@
+# This is a starter workflow to help get you started with Confluence Publishing
+# of DependaBot Alerts
+
+# Required Secrets:
+#   DEPEND_ALERT_GH_APP_ID
+#   DEPEND_ALERT_GH_APP_PRIVATE_KEY
+#   SPHINX_SRVC_KEY
+#   SPHINX_SRVC_USER
+
+name: DependAlert dev
+on:
+  push:
+    branches: dev-dependalert-feature
+
+jobs:
+  call-workflow-in-another-repo:
+    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@main
+    with:
+      repo: ${{ github.repository }}
+      owner: ${{ github.event.repository.owner.name }}
+      repo_for_dl: ${{ github.event.repository.name }}
+    secrets:
+      gh_app_id: ${{ secrets.DEPEND_ALERT_GH_APP_ID }}
+      gh_app_key: ${{ secrets.DEPEND_ALERT_GH_APP_PRIVATE_KEY }}
+      sphinx_srvc_key: ${{ secrets.SPHINX_SRVC_KEY }}
+      sphinx_srvc_user: ${{ secrets.SPHINX_SRVC_USER }}
+  
