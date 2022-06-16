@@ -1,0 +1,7 @@
+{
+    "name": "oneTakeda Changelog Workflow",
+    "description": "oneTakeda Organization starter workflow to auto-generate changelog based on Git history and post to MS Teams.",
+    "categories": [
+        "Changelog"
+    ]
+}

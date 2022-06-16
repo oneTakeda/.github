@@ -1,0 +1,66 @@
+# This is a starter workflow to help you get started with building Docker Containers using Actions
+
+# Required Secrets:
+# MSTEAMS_WEBHOOK
+
+# The Changelog tool expects that Tags using Semantic versioning are in place or it will consider all work "unreleased"
+# For full details on the tool including how to use templates, please refer to https://www.npmjs.com/package/auto-changelog
+
+name: Build and Push
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a single job called "changelog"
+  changelog:
+  
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      
+        # Check out the repository with added depth for Changelog history
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+        # Install Node.js
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+
+        # Install Changelog and its dependencies
+      - name: Install Changelog and Dependencies
+        run: npm install -g auto-changelog
+
+      - name: Generate Changelog For Unreleased Code
+        env:
+          # Secret URL generated from teams webhook connector to send real-time notification.
+          # For more information on creating one, visit https://medium.com/@ankush.kumar133/get-started-with-microsoft-team-connectors-incoming-webhook-a330657993e7 
+          TEAMS_WEBHOOK: ${{ secrets.MSTEAMS_WEBHOOK }}       
+        run: |
+          # Generate latest unreleased changelog
+          LATEST_CHANGELOG=$(npx auto-changelog  --stdout --hide-credit --unreleased-only | sed "s/\"/'/g")
+          # Curl command to send latest changelog message to Teams.
+          curl -X POST -H 'Content-Type: application/json' -d "{\"text\": \"$LATEST_CHANGELOG\"}" $TEAMS_WEBHOOK
+          
+      - name: Generate Changelog For Latest Release Only
+        env:
+          # Secret URL generated from teams webhook connector to send real-time notification.
+          # For more information on creating one, visit https://medium.com/@ankush.kumar133/get-started-with-microsoft-team-connectors-incoming-webhook-a330657993e7 
+          TEAMS_WEBHOOK: ${{ secrets.MSTEAMS_WEBHOOK }}       
+        run: |
+          LATEST_TAG=$(git describe --tags --abbrev=0)
+          LATEST_CHANGELOG=$(npx auto-changelog  --stdout --hide-credit --starting-version $LATEST_TAG | sed "s/\"/'/g")
+          curl -X POST -H 'Content-Type: application/json' -d "{\"text\": \"$LATEST_CHANGELOG\"}" $TEAMS_WEBHOOK
