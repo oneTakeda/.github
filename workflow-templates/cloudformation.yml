@@ -1,0 +1,136 @@
+# This is a starter workflow to help you get started with deploying CloudFormation on AWS using Actions
+
+# Required Secrets:
+# AWS_ROLE_TO_ASSUME
+
+# Example Secrets:
+# DB_USER
+# DB_PASSWORD
+
+name: CloudFormation Deploy
+
+# Controls when the workflow will run
+on:
+
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches:
+      - $default-branch
+      
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  
+  # The deploy job will install the CloudFormation Template
+  deploy:
+    name: Deploy CloudFormation Template to AWS
+    
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+    # The name of the environment to deploy to
+    environment: DEVELOPMENT
+    
+    # Explicitly set permissions for the $GITHUB_TOKEN that the workflow uses
+    permissions:
+      
+      # id-token is necessary for the AWS IAM Assume Role
+      id-token: write
+      
+      # contents is necessary to read the repository
+      contents: read
+      
+    # Outputs are pieces of information to be made available to subsequent jobs
+    outputs:
+      # These are example outputs
+      host: ${{ steps.deploy.outputs.DatabaseHost }}
+      port: ${{ steps.deploy.outputs.DatabasePort }}
+      
+    # Steps represent a sequence of tasks that will be executed as part of the job  
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+        # Making use of the AWS/GitHub OIDC Connector, authenticate to AWS
+        # https://mytakeda.sharepoint.com/sites/DevOps/SitePages/Authenticating-to-AWS-from-Github-Actions-using-OIDC.aspx
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: CFTProvisioning
+
+        # Define an environment name based on the repository and example environment
+        # Format would be oneTakeda-reponame-DEVELOPMENT
+      - name: Configure environment name
+        id: env-name
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          ENVIRONMENT=${REPO//\//-}-DEVELOPMENT
+          echo "Environment name: $ENVIRONMENT"
+          echo "::set-output name=environment::$ENVIRONMENT"
+
+        # Apply the CloudFormation Teamplate cft.yml from within the iac directory
+      - name: Deploy CloudFormation
+        id: deploy
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+          name: ${{ steps.env-name.outputs.environment }}-provision
+          template: ./iac/cft.yml
+          
+          # Do not fail the deployment if no changes are applied
+          no-fail-on-empty-changeset: "1"
+          
+          # Supply parameters to the template
+          parameter-overrides: >-
+            DBUsername=${{secrets.DB_USER}},
+            DBPassword=${{secrets.DB_PASSWORD}}
+
+  # The teardown job will uninstall the CloudFormation Template
+  teardown:
+    name: Delete CloudFormation Stack
+    
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    environment: DEVELOPMENT
+    
+    # The needs parameter ensures that the teardown job will run after the deploy job
+    needs: [deploy]
+    
+    # Explicitly set permissions for the $GITHUB_TOKEN that the workflow uses
+    permissions:
+      
+      # id-token is necessary for the AWS IAM Assume Role
+      id-token: write
+      
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    
+        # Making use of the AWS/GitHub OIDC Connector, authenticate to AWS
+        # https://mytakeda.sharepoint.com/sites/DevOps/SitePages/Authenticating-to-AWS-from-Github-Actions-using-OIDC.aspx
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          aws-region: us-east-1
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: CFTTeardown
+
+        # Define an environment name based on the repository and example environment
+        # Format would be oneTakeda-reponame-DEVELOPMENT
+      - name: Configure environment name
+        id: env-name
+        env:
+          REPO: ${{ github.repository }}
+        run: |
+          ENVIRONMENT=${REPO//\//-}-DEVELOPMENT
+          echo "Environment name: $ENVIRONMENT"
+          echo "::set-output name=environment::$ENVIRONMENT"
+
+        # Teardown the CloudFormation Stack
+      - name: Delete CloudFormation Stack
+        id: teardown
+        run: |
+          aws cloudformation delete-stack --stack-name ${{ steps.env-name.outputs.environment }}-provision
