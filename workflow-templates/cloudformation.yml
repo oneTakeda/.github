@@ -97,6 +97,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: DEVELOPMENT
     
+    # The needs parameter ensures that the teardown job will run after the deploy job
+    needs: [deploy]
+    
     # Explicitly set permissions for the $GITHUB_TOKEN that the workflow uses
     permissions:
       
