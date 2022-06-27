@@ -45,17 +45,33 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3    
 
-      #Sample 'Build' Step
-      - run: mkdir -p path/to/artifact
-      - run: echo hello > path/to/artifact/world.txt
+      # The following three steps are Example 'Build' steps using node and npm
 
-      # Upload artifacts
+      # Setup node
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      # Install dependencies
+      - name: Install build dependencies
+        run: npm install
+
+      # Build Project
+      - name: Install MBT build tool
+        run: npm build
+
+      # The following three steps are Example JFrog steps for connecting to JFrog and uploading the build artifact
+
+      # Download and Install the JFrog CLI
       - uses: jfrog/setup-jfrog-cli@v1.2.0
         name: Setup JFrog CLI
 
+      # Configure JFrog Credentials
       - name: Setup JFrog Credentials
         run: jfrog config add --artifactory-url=${{ env.JFROG_URL }} --user='${{ secrets.JFROG_USER }}' --password='${{ secrets.JFROG_PASSWORD }}'
-
+      
+      # Upload artifacts
       - name: Upload JFrog Artifacts
         shell: bash
-        run: jfrog rt u "path/to/artifact/world.txt" "$JFROG_ARTIFACT_DIR/$GITHUB_RUN_ID/"
+        run: jfrog rt u "local/path/to/artifact" "$JFROG_ARTIFACT_DIR/$GITHUB_RUN_ID/"
