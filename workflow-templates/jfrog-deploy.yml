@@ -15,7 +15,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# This is a starter workflow to help you get started with deploying on OpenShift using Actions
+# This is a starter workflow to help you get started with JFrog artifacting using Actions
 
 # Required Secrets:
 #    JFROG_USER
@@ -47,7 +47,7 @@ jobs:
 
       #Sample 'Build' Step
       - run: mkdir -p path/to/artifact
-      - run: echo hello > path/to/artifact/world.txt   
+      - run: echo hello > path/to/artifact/world.txt
 
       # Upload artifacts
       - uses: jfrog/setup-jfrog-cli@v1.2.0
