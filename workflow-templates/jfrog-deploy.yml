@@ -1,4 +1,4 @@
-# This is a starter workflow to help you get started with building Docker Containers using Actions
+# This is a starter workflow to help you get started with uploading JFrog Artifacts using Actions
 
 # Required Secrets:
 # JFROG_USER
@@ -15,7 +15,7 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# This is a starter workflow to help you get started with JFrog artifacting using Actions
+# This is a starter workflow to help you get started with uploading JFrog Artifacts using Actions
 
 # Required Secrets:
 #    JFROG_USER
