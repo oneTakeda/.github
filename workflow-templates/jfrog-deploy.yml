@@ -1,0 +1,77 @@
+# This is a starter workflow to help you get started with uploading JFrog Artifacts using Actions
+
+# Required Secrets:
+# JFROG_USER
+# JFROG_PASSWORD
+
+name: Build and Push
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# This is a starter workflow to help you get started with uploading JFrog Artifacts using Actions
+
+# Required Secrets:
+#    JFROG_USER
+#    JFROG_PASSWORD
+
+name: JFrog Deployment
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  # push:
+  #   branches:
+  #     - $default-branch
+      
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch: 
+env:
+  JFROG_URL: https://takedaawsuseast.jfrog.io/artifactory/
+  JFROG_ARTIFACT_DIR: <EXAMPLE DIR>
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-push"
+  build-and-push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3    
+
+      # The following three steps are Example 'Build' steps using node and npm
+
+      # Setup node
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 12
+
+      # Install dependencies
+      - name: Install build dependencies
+        run: npm install
+
+      # Build Project
+      - name: Build Artifact
+        run: npm build
+
+      # The following three steps are Example JFrog steps for connecting to JFrog and uploading the build artifact
+
+      # Download and Install the JFrog CLI
+      - uses: jfrog/setup-jfrog-cli@v1.2.0
+        name: Setup JFrog CLI
+
+      # Configure JFrog Credentials
+      - name: Setup JFrog Credentials
+        run: jfrog config add --artifactory-url=${{ env.JFROG_URL }} --user='${{ secrets.JFROG_USER }}' --password='${{ secrets.JFROG_PASSWORD }}'
+      
+      # Upload artifacts
+      - name: Upload JFrog Artifacts
+        shell: bash
+        run: jfrog rt u "local/path/to/artifact" "$JFROG_ARTIFACT_DIR/$GITHUB_RUN_ID/"

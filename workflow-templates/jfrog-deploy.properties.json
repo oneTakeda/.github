@@ -1,0 +1,10 @@
+{
+    "name": "oneTakeda JFrog Deployment Workflow",
+    "description": "oneTakeda Organization JFrog Deployment starter workflow.",
+    "categories": [
+        "Artifacts",
+        "JFrog",
+        "Artifactory",
+        "Deployment"
+    ]
+}
