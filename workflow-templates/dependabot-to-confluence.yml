@@ -1,0 +1,18 @@
+name: DependAlert User
+on: [pull_request]
+
+jobs:
+  call-workflow-in-another-repo:
+    if: ${{ github.actor == "dependabot[bot]" }}
+
+    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.3.4b1
+    with:
+        repo: ${{ github.repository }}
+        owner: ${{ github.event.repository.owner.name }}
+        sphinx_confluence_space: "YOURSPACE"
+        sphinx_srvc_user: "you@takeda.com"
+        # sphinx_parent_page: "Sphinx Parent"   # not required but recommended
+    secrets:
+        gh_app_id: ${{ secrets.DEPEND_ALERT_GH_APP_ID }}
+        gh_app_key: ${{ secrets.DEPEND_ALERT_GH_APP_PRIVATE_KEY }}
+        sphinx_srvc_key: ${{ secrets.SPHINX_SRVC_KEY }}   # atlassian key for you@takeda.com

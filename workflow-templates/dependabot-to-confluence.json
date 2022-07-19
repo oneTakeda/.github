@@ -1,0 +1,8 @@
+{
+    "name": "oneTakeda Github Dependabot Alerts to Confluence Workflow",
+    "description": "oneTakeda Organization Dependabot Alerts to Confluence starter workflow.",
+    "categories": [
+        "GitHub",
+        "Confluence"
+    ]
+}
