@@ -15,13 +15,12 @@ jobs:
   call-workflow-in-another-repo:
     if: ${{ github.actor == "dependabot[bot]" }}
 
-    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.3.4b1
+    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.6b1
     with:
-        repo: ${{ github.repository }}
-        owner: ${{ github.event.repository.owner.name }}
         sphinx_confluence_space: "YOURSPACE"
         sphinx_srvc_user: "you@takeda.com"
-        # sphinx_parent_page: "Sphinx Parent"   # not required but recommended
+        # sphinx_parent_page: "Confluence Parent Page"   # OPTIONAL
+        # alerts_title_override: "Sample Page Title"     # OPTIONAL
     secrets:
         gh_app_id: ${{ secrets.DEPEND_ALERT_GH_APP_ID }}
         gh_app_key: ${{ secrets.DEPEND_ALERT_GH_APP_PRIVATE_KEY }}
