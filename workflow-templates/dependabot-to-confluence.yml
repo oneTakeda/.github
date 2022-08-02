@@ -1,3 +1,13 @@
+# This is a starter workflow to help you get started with publishing Dependabot Alerts to Confluence using Actions
+
+# Required Secrets:
+# sphinx_confluence_space
+# sphinx_srvc_user
+# sphinx_srvc_key
+
+# Optional Secrets:
+# sphinx_parent_page
+
 name: DependAlert User
 on: [pull_request]
 
