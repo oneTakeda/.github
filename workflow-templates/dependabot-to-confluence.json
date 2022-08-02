@@ -1,6 +1,6 @@
 {
     "name": "oneTakeda Github Dependabot Alerts to Confluence Workflow",
-    "description": "oneTakeda Organization Dependabot Alerts to Confluence starter workflow.",
+    "description": "Use this workflow in your Github Actions to publish any Dependabot Alerts to a specified Confluence Page and Space. You will provide a Confluence User and API Key along with the Space Name and an optional Parent Page.",
     "categories": [
         "GitHub",
         "Confluence"
