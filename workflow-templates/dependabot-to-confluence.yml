@@ -16,7 +16,7 @@ jobs:
   call-workflow-in-another-repo:
     if: ${{ github.actor == "dependabot[bot]" }}
 
-    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.6b1
+    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.7b1
     with:
         sphinx_confluence_space: "YOURSPACE"             # The name of your Confluence Spave
         sphinx_srvc_user: "you@takeda.com"               # The email of the user to publish to confluence
