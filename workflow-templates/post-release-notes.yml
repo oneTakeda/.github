@@ -1,0 +1,60 @@
+# This is a starter workflow to help you get started with posting Release Notes to MS Teams
+
+# Required Secrets:
+# MSTEAMS_WEBHOOK
+
+# This workflow will post a summary Adaptive Card to your MS Teams Channel when a GitHub Release is completed
+
+name: Post Release Notes to MS Teams
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on release only
+  release:
+    types: [released]
+    
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  
+  # This workflow contains a single job called "post-to-teams"
+  post-to-teams:
+  
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      
+      # Use Curl to send a POST request to the MS Teams Webhook
+      # Customize the JSON section to adjust for your needs
+      - name: Post to Teams
+        env:
+          TEAMS_WEBHOOK: ${{ secrets.MSTEAMS_WEBHOOK }}
+          JSON: |
+             {
+               "summary": "Github Actions CI",
+               "themeColor": "90C978",
+               "sections": [
+                 {
+                  "activityTitle": "New Release: ${{ github.event.release.name}} on [${{ github.repository }}](https://github.com/${{ github.repository}})",
+                  "activitySubtitle": "by [${{github.event.release.author.login}}](${{github.event.release.author.html_url}})",
+                  "potentialAction": [
+                    {
+                      "@context": "http://schema.org",
+                      "@type": "ViewAction",
+                      "name": "View Release",
+                      "target": [
+                        "${{github.event.release.html_url}}"
+                      ]
+                    }
+                  ],
+                  "facts": [
+                    { "name": "Release", "value": "${{ github.event.release.name }}" },
+                    { "name": "Tag", "value": "${{ github.event.release.tag_name }}" },
+                    { "name": "Notes", "value": "${{ github.event.release.body }}" }
+                  ]
+                 }
+               ]
+              }
+        run: |
+          curl -X POST -H 'Content-Type: application/json' -d "$JSON" $TEAMS_WEBHOOK
