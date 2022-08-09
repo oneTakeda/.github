@@ -1,0 +1,9 @@
+{
+    "name": "oneTakeda MS Teams Release Notes Workflow",
+    "description": "oneTakeda Organization starter workflow to post GitHub Release Notes to MS Teams.",
+    "categories": [
+        "Release",
+        "Notes",
+        "Teams"
+    ]
+}
