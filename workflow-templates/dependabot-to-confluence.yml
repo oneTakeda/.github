@@ -1,28 +1,32 @@
 # This is a starter workflow to help you get started with publishing Dependabot Alerts to Confluence using Actions
-# In order to use this workflow, please request that the DevOps team add the DevOps-DependAlert app to your repository.
 
-# Required Secrets:
+# Required Inputs:
+# build
 # sphinx_confluence_space
 # sphinx_srvc_user
-# sphinx_srvc_key
+# sphinx_parent_page
 
-# Required GitHub App:
-# DevOps-DependAlert
+# Required Secrets:
+# sphinx_srvc_key
+# gh_app_id (org secret)
+# gh_app_key (org secret)
 
 name: DependAlert User
-on: [pull_request]
-
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch: # Allows for manual runs from the UI and CLI - optional]
 jobs:
   call-workflow-in-another-repo:
-    if: ${{ github.actor == "dependabot[bot]" }}
+    if: ${{ github.actor == 'dependabot[bot]' }}
 
-    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.6b1
+    uses: oneTakeda/devops-dependabot-action/.github/workflows/dependalert.yaml@0.8b1
     with:
-        sphinx_confluence_space: "YOURSPACE"             # The name of your Confluence Spave
-        sphinx_srvc_user: "you@takeda.com"               # The email of the user to publish to confluence
-        # sphinx_parent_page: "Confluence Parent Page"   # OPTIONAL
-        # alerts_title_override: "Sample Page Title"     # OPTIONAL
+        build: "0.8b1"
+        sphinx_confluence_space: "YOURSPACE"
+        sphinx_srvc_user: "first.last@takeda.com"
+        sphinx_parent_page: "12345678"  
     secrets:
-        gh_app_id: ${{ secrets.DEPEND_ALERT_GH_APP_ID }}              # Do not touch this
-        gh_app_key: ${{ secrets.DEPEND_ALERT_GH_APP_PRIVATE_KEY }}    # Do not touch this
-        sphinx_srvc_key: ${{ secrets.SPHINX_SRVC_KEY }}   # Atlassian key for user from "sphinx_srvc_user" above.
+        gh_app_id: ${{ secrets.DEPEND_ALERT_GH_APP_ID }}
+        gh_app_key: ${{ secrets.DEPEND_ALERT_GH_APP_PRIVATE_KEY }}
+        sphinx_srvc_key: ${{ secrets.SPHINX_SRVC_KEY }}  
