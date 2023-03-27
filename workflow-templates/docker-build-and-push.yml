@@ -40,9 +40,9 @@ jobs:
       # Build and Push the Image
       # Be sure to update with your project's actual naming replacing "EXAMPLE"
       - name: Build and push Docker Image
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v4
         with:
          context: .
          push: true
          file: ./path/to/Dockerfile
-         tags: takedaawsuseast-EXAMPLE-docker-local.jfrog.io/EXAMPLE-docker-local/EXAMPLE:$GITHUB_SHA
+         tags: takedaawsuseast-EXAMPLE-docker-local.jfrog.io/EXAMPLE-docker-local/EXAMPLE:${{ github.ref_name }}
