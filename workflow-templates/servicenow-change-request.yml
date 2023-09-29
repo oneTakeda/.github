@@ -1,0 +1,76 @@
+# This is a starter workflow to automatically create Change Requests
+
+# Required Secrets:
+# SN_DEVOPS_USER
+# SN_DEVOPS_PASSWORD
+# SN_DEVOPS_TOOL_ID
+# SN_GH_APP_ID
+# SN_GH_APP_PRIVATE_KEY
+
+# Required Variables:
+# SN_URL
+
+name: ServiceNow
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on pull request events but only for the "main" branch
+  pull_request:
+    branches: ["main"]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+  # This workflow contains a single job called "create_change_request"
+  create_change_request:
+    name: Create Change Request
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Only run on opening of a pull request in order to avoid creating duplicate change requests
+    if: ${{ github.event.action == 'opened'}}
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+
+      # Tell ServiceNow to create a change with the given parameters
+      # Replace the strings as necessary for your project.  At minimum, you must replace the placeholders labeled as "PLACEHOLDER_XXXX".
+      - name: Create ServiceNow Change
+        uses: oneTakeda/snow-devops-change@v1.38.1
+        id: ServiceNowCR
+        with:
+          devops-integration-user-name: ${{ secrets.SN_DEVOPS_USER }}
+          devops-integration-user-password: ${{ secrets.SN_DEVOPS_PASSWORD }}
+          instance-url: ${{ vars.SN_URL }}
+          tool-id: ${{ secrets.SN_DEVOPS_TOOL_ID }}
+          context-github: ${{ toJSON(github) }}
+          job-name: "Create Change Request"
+          change-request: '{"setCloseCode":false, "attributes": {"short_description":"Automated Change Request", "description":"Sample Automated Change", "implementation_plan":"Software update is tested and results can be found in Test Summaries Tab; When the change is approved the implementation happens automated by the CICD pipeline within the change planned start and end time window.","backout_plan":"When software fails in production, the previous software release will be re-deployed.", "test_plan":"Testing if the software was successfully deployed", "cmdb_ci":"PLACEHOLDER_CI", "assigned_to":"PLACEHOLDER_ASSIGNEE","requested_by":"PLACEHOLDER_REQUESTOR","u_change_mode":"true", "devops_change":"true"}}'
+
+      # Post the ID of the newly created change request as a comment on the GitHub pull request
+      - run: |
+          gh pr comment $PR --repo $REPO --body "ServiceNOW Change Request: $CR"
+        env:
+          REPO: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CR: ${{ steps.ServiceNowCR.outputs.change_number }}
+          PR: ${{ github.event.pull_request.number }}
+
+      # Retrieve a token from GitHub to be used in the following step
+      - name: Get Token for Org Actions GitHub App
+        uses: navikt/github-app-token-generator@v1
+        id: githubApp
+        with:
+          app-id: ${{ secrets.SN_GH_APP_ID }}
+          private-key: ${{ secrets.SN_GH_APP_PRIVATE_KEY }}
+
+      # Add a status check to the pull request for the status of the ServiceNow change request
+      - name: Set Status Check Using GH App
+        run: |
+          curl \
+          -X POST \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ steps.githubApp.outputs.token }}" \
+          https://api.github.com/repos/${{ github.repository }}/check-runs \
+          -d '{"name":"ServiceNOW Change","head_sha":"${{ github.head_ref }}"}'
