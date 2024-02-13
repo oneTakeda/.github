@@ -51,7 +51,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job  
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
         # Making use of the AWS/GitHub OIDC Connector, authenticate to AWS
         # https://mytakeda.sharepoint.com/sites/DevOps/SitePages/Authenticating-to-AWS-from-Github-Actions-using-OIDC.aspx

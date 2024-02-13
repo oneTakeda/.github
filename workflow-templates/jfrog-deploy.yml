@@ -43,15 +43,15 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3    
+      - uses: actions/checkout@v4
 
       # The following three steps are Example 'Build' steps using node and npm
 
       # Setup node
       - name: Use Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: latest
 
       # Install dependencies
       - name: Install build dependencies
@@ -64,7 +64,7 @@ jobs:
       # The following three steps are Example JFrog steps for connecting to JFrog and uploading the build artifact
 
       # Download and Install the JFrog CLI
-      - uses: jfrog/setup-jfrog-cli@v3.3.0
+      - uses: jfrog/setup-jfrog-cli@v4
         name: Setup JFrog CLI
 
       # Configure JFrog Credentials
