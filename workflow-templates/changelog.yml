@@ -31,14 +31,14 @@ jobs:
     steps:
       
         # Check out the repository with added depth for Changelog history
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
         # Install Node.js
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: latest
 
         # Install Changelog and its dependencies
       - name: Install Changelog and Dependencies
