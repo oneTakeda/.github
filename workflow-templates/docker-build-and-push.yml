@@ -1,6 +1,6 @@
 # This is a starter workflow to help you get started with building Docker Containers using Actions
 
-# Required Secrets:
+# Required Variables & Secrets:
 # JFROG_USER
 # JFROG_PASSWORD
 
@@ -34,7 +34,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: takedaawsuseast-EXAMPLE-docker-local.jfrog.io
-          username: ${{ secrets.JFROG_USER }}
+          username: ${{ vars.JFROG_USER }}
           password: ${{ secrets.JFROG_PASSWORD }}
       
       # Build and Push the Image
