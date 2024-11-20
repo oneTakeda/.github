@@ -1,0 +1,56 @@
+name: Build and Push Helm Chart to JFrog
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-push"
+  build-and-push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # Log in to the Docker Registry
+      # Make you sure yuo have the JFrog Docker registry URL and credentials set as secrets in your repository
+      # Be sure to update with your project's actual registry replacing "EXAMPLE", e.g. 
+      # registry: takedaawsuseast-EXAMPLE-docker-local.jfrog.io
+      - name: Login to JFrog Docker repo
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ vars.JFROG_DOCKER_REPO_URL  }}
+          username: ${{ vars.JFROG_REPO_USER }}
+          password: ${{ secrets.JFROG_REPO_TOKEN }}
+      # This step installs Helm using the azure/setup-helm GitHub Action.
+      # The version of Helm to be installed is specified by the HELM_VERSION variable.
+      - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+        with:
+          version: ${{ vars.HELM_VERSION }}
+      # Log in to JFrog Helm repo     
+      - name: Add JFrog Helm repo
+        shell: bash
+        run: |
+            helm registry login -u ${{ vars.JFROG_REPO_USER }} -p ${{ secrets.JFROG_REPO_TOKEN }} ${{ vars.JFROG_HELM_REPO_URL }}
+      # Build and Push the Image Docker image
+      - name: Build and push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+         context: .
+         push: ${{ github.event_name != 'pull_request' }}
+         file: ./path/to/Dockerfile
+         tags: ${{ vars.JFROG_DOCKER_REPO_URL }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+      # Build and Push the Helm Chart
+      # We recommend that you build Docker images and Helm charts from GitHub Actions.
+      - name: Build and push Helm chart
+        shell: bash
+        run: |
+            helm package <Helm_chart_name>/. --version <Helm_chart_version>
+            helm push <Helm_chart_name>-<Helm_chart_version>.tgz oci://${{ vars.JFROG_HELM_REPO }}
+      
