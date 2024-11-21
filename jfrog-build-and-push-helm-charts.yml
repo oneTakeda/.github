@@ -1,4 +1,11 @@
-name: Build and Push Helm Chart to JFrog
+# This is a starter workflow to help you get started with building Helm Charts using Actions
+
+# Required Variables & Secrets (This are example, use the ones created for your repo):
+# JFROG_DOCKER_REPO_URL
+# JFROG_REPO_USER
+# JFROG_REPO_TOKEN
+
+name: Build and Push Helm Chart
 # Controls when the workflow will run
 on:
   # Triggers the workflow on push or pull request events but only for the default branch
@@ -18,7 +25,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       # Log in to the Docker Registry
-      # Make you sure yuo have the JFrog Docker registry URL and credentials set as secrets in your repository
+      # Make you sure you already have the JFrog Docker registry access + URL and credentials configured in your repository
       # Be sure to update with your project's actual registry replacing "EXAMPLE", e.g. 
       # registry: takedaawsuseast-EXAMPLE-docker-local.jfrog.io
       - name: Login to JFrog Docker repo
@@ -38,14 +45,6 @@ jobs:
         shell: bash
         run: |
             helm registry login -u ${{ vars.JFROG_REPO_USER }} -p ${{ secrets.JFROG_REPO_TOKEN }} ${{ vars.JFROG_HELM_REPO_URL }}
-      # Build and Push the Image Docker image
-      - name: Build and push Docker Image
-        uses: docker/build-push-action@v6
-        with:
-         context: .
-         push: ${{ github.event_name != 'pull_request' }}
-         file: ./path/to/Dockerfile
-         tags: ${{ vars.JFROG_DOCKER_REPO_URL }}/${{ vars.DOCKER_IMAGE_NAME }}:${{ github.sha }}
       # Build and Push the Helm Chart
       # We recommend that you build Docker images and Helm charts from GitHub Actions.
       - name: Build and push Helm chart
