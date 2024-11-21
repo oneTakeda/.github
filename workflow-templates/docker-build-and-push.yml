@@ -38,7 +38,7 @@ jobs:
       
       # Build and Push the Image
       # Be sure to update with your project's actual naming replacing "EXAMPLE" and update the context and file path
-      # The tags should be updated to reflect the image name and version as needed
+      # We recommend to update the tags with image name and version usage appropriately, SHA is just and example
       - name: Build and push Docker Image
         uses: docker/build-push-action@v6
         with:
