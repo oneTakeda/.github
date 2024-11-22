@@ -1,0 +1,111 @@
+# This is a starter workflow to help you get started with deploying a GitHub Runner on EKS
+# This workflow assumes that the following secrets and variables exist.  
+
+# Required Organization Secrets:
+# DEVOPS_RUNNER_APP_ID
+# DEVOPS_RUNNER_APP_INSTALL_ID
+# DEVOPS_RUNNER_APP_PEM
+
+# Required Secrets:
+# AWS_ACCOUNT_NUMBER
+
+# Required Variables:
+# AWS_REGION
+# EKS_CLUSTER_NAME
+
+# IMPORTANT: If your repository has these variables named differently, please replace them in the workflow below.
+
+---
+name: GitHub Runner Deployment to EKS
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the default branch and this specific workflow file
+  push:
+    branches: [ $default-branch ]
+    paths:
+      - ".github/workflows/eks-github-runner.yaml"
+
+  # Allows you to run this workflow on-demand
+  workflow_dispatch:
+
+# Define configuration information for the workflow
+# IMPORTANT: Replace EXAMPLE with the name of the runner group and any appropriate labels
+env:
+    # Account and cluster configuration
+    CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
+    AWS_ACCOUNT_NUMBER: ${{ secrets.AWS_ACCOUNT_NUMBER }}
+    AWS_REGION: ${{ vars.AWS_REGION }}
+    # Deployment configuration
+    RELEASE_NAME: eks-github-runner
+    GITHUB_RUNNER_GROUP: EXAMPLE
+    GITHUB_RUNNER_LABELS: EXAMPLE
+    GITHUB_APP_ID: ${{ secrets.DEVOPS_RUNNER_APP_ID }}
+    GITHUB_APP_INSTALL_ID: ${{ secrets.DEVOPS_RUNNER_APP_INSTALL_ID }}
+    GITHUB_APP_PEM: ${{ secrets.DEVOPS_RUNNER_APP_PEM }}
+    REPLICAS: 2
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+
+    # This workflow contains a single job called "kube-run"
+    kube-run:
+
+        # The type of runner that the job will run on.
+        # This workflow requires the use of a self-hosted runner for EKS access.
+        runs-on: ["self-hosted", "aws-rhel8"]
+
+        # Specify permissions for the default GITHUB_TOKEN so that OIDC authentication can function
+        permissions:
+          contents: read
+          id-token: write
+
+        # Steps represent a sequence of tasks that will be executed as part of the job
+        steps:
+
+        # Log into AWS using OIDC
+        - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@v4
+          with:
+            # role is provisioned by TakedaEKSClusterResouces module
+            role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_NUMBER }}:role/${{ env.CLUSTER_NAME}}-GitHub-CD
+            aws-region: ${{ vars.AWS_REGION }}
+
+        # Adjust the PATH variable to include /usr/local/bin where the aws-cli exists
+        - name: Extend system PATH variable
+          run: echo "/usr/local/bin" >> $GITHUB_PATH
+
+        # Install kubectl tool
+        - uses: azure/setup-kubectl@v4
+          with:
+            version: "latest"
+
+        # Install Helm tool
+        - uses: azure/setup-helm@v4
+          with:
+            version: "latest"
+
+        # Authenticate and configure Kubernetes CLI
+        - name: Generate kubeconfig
+          run: aws eks update-kubeconfig --name ${{ env.CLUSTER_NAME}} --region ${{ env.AWS_REGION }}
+
+        # Run deployment of GitHub Runner Helm Chart
+        - name: Deploy GitHub Runner
+          # https://github.com/redhat-actions/openshift-actions-runner-chart
+          shell: bash
+          run: | 
+            kubectl config set-context --current --namespace builds
+            helm repo add openshift-actions-runner https://redhat-actions.github.io/openshift-actions-runner-chart && 
+            helm repo update &&
+            helm upgrade --install $RELEASE_NAME openshift-actions-runner/actions-runner \
+                --set-string runnerTag=latest \
+                --set-string githubAppId=$GITHUB_APP_ID \
+                --set-string githubAppInstallId=$GITHUB_APP_INSTALL_ID \
+                --set-string githubAppPem="$GITHUB_APP_PEM" \
+                --set-string githubOwner=oneTakeda \
+                --set-string runnerGroup=$GITHUB_RUNNER_GROUP \
+                --set-string replicas=${REPLICAS:-1} \
+                --set runnerLabels="{ ${GITHUB_RUNNER_LABELS} }" \
+                --atomic \
+            && echo "---------------------------------------" \
+            && helm get manifest $RELEASE_NAME | kubectl get -f -

@@ -1,0 +1,9 @@
+{
+    "name": "oneTakeda EKS GitHub Runner Deployment Workflow",
+    "description": "oneTakeda Organization starter workflow to deploy GitHub runners to an EKS cluster.",
+    "categories": [
+        "EKS",
+        "GitHub",
+        "Runners"
+    ]
+}
