@@ -4,7 +4,7 @@
 # JFROG_USER
 # JFROG_PASSWORD
 
-name: Build and Push
+name: Docker Build and Push
 
 # Controls when the workflow will run
 on:
@@ -14,7 +14,6 @@ on:
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
-
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -38,11 +37,12 @@ jobs:
           password: ${{ secrets.JFROG_PASSWORD }}
       
       # Build and Push the Image
-      # Be sure to update with your project's actual naming replacing "EXAMPLE"
+      # Be sure to update with your project's actual naming replacing "EXAMPLE" and update the context and file path
+      # We recommend to update the tags with image name and version usage appropriately, SHA is just and example
       - name: Build and push Docker Image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
          context: .
          push: ${{ github.event_name != 'pull_request' }}
          file: ./path/to/Dockerfile
-         tags: takedaawsuseast-EXAMPLE-docker-local.jfrog.io/EXAMPLE-docker-local/EXAMPLE:${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+         tags: takedaawsuseast-EXAMPLE-docker-local.jfrog.io/EXAMPLE-docker-local/EXAMPLE:${{ github.sha }}

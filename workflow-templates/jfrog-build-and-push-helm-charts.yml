@@ -1,0 +1,45 @@
+# This is a starter workflow to help you get started with building Helm Charts using Actions
+
+# Required Variables & Secrets:
+# JFROG_REPO_USER
+# JFROG_REPO_TOKEN
+
+name: Build and Push Helm Chart
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-push"
+  build-and-push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Specifies the working directory where helm charts are located
+    defaults:
+      run:
+        working-directory: ./path/to/helm/charts
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # This step installs Helm using the azure/setup-helm GitHub Action.
+      # The version of Helm to be installed is specified by the HELM_VERSION variable, (can also be set to "latest").
+      - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+        with:
+          version: ${{ vars.HELM_VERSION }}
+      # Create Helm package and push it to JFrog Helm repository
+      # Make sure you already have the access the repo or request its creation through devops-repo-automation repo.
+      # REMEMBER to create Jfrog repo as Helm Type and replace JFrog application name appropriately (JFROG_REPO_NAME).
+      # Be sure to update with your project's actual naming replacing "CHART_NAME" with you name chart and the package version
+      - name: Package and push Helm chart to JFrog
+        shell: bash
+        run: |
+          helm package . --version 'package_version'
+          curl -u${{ vars.JFROG_REPO_USER }}:${{ secrets.JFROG_REPO_TOKEN }} -T "CHART_NAME-package_version.tgz" "https://takedaawsuseast.jfrog.io/artifactory/JFROG_REPO_NAME-helm-local/CHART_NAME-package_version.tgz"
+      
