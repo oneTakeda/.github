@@ -20,26 +20,31 @@ jobs:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
     # Specifies the working directory where helm charts are located
-    defaults:
-      run:
-        working-directory: ./path/to/helm/charts
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout code
         uses: actions/checkout@v4
       # This step installs Helm using the azure/setup-helm GitHub Action.
-      # The version of Helm to be installed is specified by the HELM_VERSION variable, (can also be set to "latest").
       - name: Install Helm
         uses: azure/setup-helm@v4.2.0
-        with:
-          version: ${{ vars.HELM_VERSION }}
       # Create Helm package and push it to JFrog Helm repository
       # Make sure you already have the access the repo or request its creation through devops-repo-automation repo.
-      # REMEMBER to create Jfrog repo as Helm Type and replace JFrog application name appropriately (JFROG_REPO_NAME).
-      # Be sure to update with your project's actual naming replacing "CHART_NAME" with you name chart and the package version
-      - name: Package and push Helm chart to JFrog
+      # Be sure to update with your project's actual naming replacing "CHART_NAME" with you chart name set the 'package_version'
+      - name: Build Helm package
         shell: bash
         run: |
-          helm package . --version 'package_version'
-          curl -u${{ vars.JFROG_REPO_USER }}:${{ secrets.JFROG_REPO_TOKEN }} -T "CHART_NAME-package_version.tgz" "https://takedaawsuseast.jfrog.io/artifactory/JFROG_REPO_NAME-helm-local/CHART_NAME-package_version.tgz"
-      
+          helm package ./path/helm/folder --version '<package_version>'
+      # Setup JFrog CLI and login to the JFrog Artifactory
+      - name: Setup JFrog CLI and login registry
+        uses: jfrog/setup-jfrog-cli@v4
+      - run: |
+          jf c add --artifactory-url=https://takedaawsuseast.jfrog.io/artifactory --user='${{ vars.JFROG_REPO_USER }}' --password='${{ secrets.JFROG_REPO_TOKEN }}'
+          jf rt ping
+      # Upload/push Helm chart to JFrog
+      # REMEMBER to create or request access to Jfrog Helm repo then replace JFrog application name appropriately (JFROG_ARTIFACT_DIR) and version.
+      # e.g. jf rt u my-helm-chart-1.0.0.tgz sample-helm-local/$GITHUB_RUN_ID/
+      - name: Upload/push Helm chart to JFrog Artifactory
+        shell: bash
+        run: |
+          jf rt u <CHART_NAME-package_version>.tgz <JFROG_ARTIFACT_DIR>/<path-to-upload-dir>/ 
+          
