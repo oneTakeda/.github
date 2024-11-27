@@ -1,4 +1,5 @@
-# This is a starter workflow to help you get started with building Helm Charts using Actions
+# This is a starter workflow to help you get started with building Helm Charts using Actions.
+# Make sure you already have the access the repo or request its creation through devops-repo-automation repo.
 
 # Required Variables & Secrets:
 # JFROG_REPO_USER
@@ -28,12 +29,11 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4.2.0
       # Create Helm package and push it to JFrog Helm repository
-      # Make sure you already have the access the repo or request its creation through devops-repo-automation repo.
-      # Be sure to update with your project's actual naming replacing "CHART_NAME" with you chart name set the 'package_version'
+      # Indicate the helm chart folder and set the 'package_version'
       - name: Build Helm package
         shell: bash
         run: |
-          helm package ./path/helm/folder --version '<package_version>'
+          helm package <./your/helm/folder> --version '<package_version>'
       # Setup JFrog CLI and login to the JFrog Artifactory
       - name: Setup JFrog CLI and login registry
         uses: jfrog/setup-jfrog-cli@v4
@@ -42,6 +42,7 @@ jobs:
           jf rt ping
       # Upload/push Helm chart to JFrog
       # REMEMBER to create or request access to Jfrog Helm repo then replace JFrog application name appropriately (JFROG_ARTIFACT_DIR) and version.
+      # Be sure to update with your project's actual naming replacing "CHART_NAME"
       # e.g. jf rt u my-helm-chart-1.0.0.tgz sample-helm-local/$GITHUB_RUN_ID/
       - name: Upload/push Helm chart to JFrog Artifactory
         shell: bash
