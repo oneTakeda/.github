@@ -1,0 +1,51 @@
+# This is a starter workflow to help you get started with building Helm Charts using Actions.
+# Make sure you already have the access the repo or request its creation through devops-repo-automation repo.
+
+# Required Variables & Secrets:
+# JFROG_REPO_USER
+# JFROG_REPO_TOKEN
+
+name: Build and Push Helm Chart
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build-and-push"
+  build-and-push:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    # Specifies the working directory where helm charts are located
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+      # This step installs Helm using the azure/setup-helm GitHub Action.
+      - name: Install Helm
+        uses: azure/setup-helm@v4.2.0
+      # Create Helm package and push it to JFrog Helm repository
+      # Indicate the helm chart folder and set the 'package_version'
+      - name: Build Helm package
+        shell: bash
+        run: |
+          helm package <./your/helm/folder> --version '<package_version>'
+      # Setup JFrog CLI and login to the JFrog Artifactory
+      - name: Setup JFrog CLI and login registry
+        uses: jfrog/setup-jfrog-cli@v4
+        env:
+          JF_URL: ${{ vars.JFROG_URL }}
+          JF_ACCESS_TOKEN: ${{ secrets.JFROG_REPO_TOKEN }}
+      # Upload/push Helm chart to JFrog
+      # REMEMBER to create or request access to Jfrog Helm repo then replace JFrog application name appropriately (JFROG_REPO_NAME) and version.
+      # Be sure to update with your project's actual naming replacing "CHART_NAME"
+      # e.g. jf rt u my-helm-chart-1.0.0.tgz sample-helm-local/my-helm-chart/
+      - name: Upload/push Helm chart to JFrog Artifactory
+        shell: bash
+        run: |
+          jf rt u <CHART_NAME-package_version>.tgz <JFROG_REPO_NAME>/<CHART_NAME>/
+          

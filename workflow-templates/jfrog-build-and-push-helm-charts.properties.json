@@ -1,0 +1,13 @@
+{
+  "name": "onetakeda Helm Charts Workflow",
+  "description": "A GitHub Actions workflow to build a Helm chart and push it to JFrog Artifactory.",
+  "categories": [
+    "Helm",
+    "Deployment",
+    "Artifacts",
+    "JFrog"
+  ],
+  "filePatterns": [
+      "*.yml"
+  ]
+}
