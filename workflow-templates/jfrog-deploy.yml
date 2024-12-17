@@ -33,24 +33,6 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # The following three steps are Example 'Build' steps using node and npm
-
-      # Setup node
-      - name: Use Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: latest
-
-      # Install dependencies
-      - name: Install build dependencies
-        run: npm install
-
-      # Build Project
-      - name: Build Artifact
-        run: npm build
-
-      # The following three steps are Example JFrog steps for connecting to JFrog and uploading the build artifact
-
       # Setup JFrog CLI and authenticate to JFrog using OIDC
       - name: Setup JFrog CLI
         id: jfrog-auth
