@@ -3,7 +3,7 @@
 # Assumes your GitHub Repository already has JFrog OIDC identity mapping setup correctly
 # See https://mytakeda.sharepoint.com/sites/DevOps/SitePages/JFrog-Artifactory-Guide.aspx
 
-name: Build and Push
+name: Deploy to JFrog
 
 # Controls when the workflow will run
 on:
@@ -14,17 +14,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# This is a starter workflow to help you get started with uploading JFrog Artifacts using Actions
-
-name: JFrog Deployment
-on:
-  # Triggers the workflow on push or pull request events but only for the default branch
-  # push:
-  #   branches:
-  #     - $default-branch
-      
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch: 
 env:
   JFROG_REPO_NAME: <EXAMPLE DIR>
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
