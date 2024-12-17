@@ -52,11 +52,11 @@ jobs:
       # Upload/push Helm chart to JFrog
       # REMEMBER to create or request access to Jfrog Helm repo then replace JFrog application name appropriately (JFROG_REPO_NAME) and version.
       # Be sure to update with your project's actual naming replacing "CHART_NAME"
-      # e.g. jf rt u my-helm-chart-1.0.0.tgz sample-helm-local/my-helm-chart/
+      # e.g. jf rt u my-helm-chart-1.0.0.tgz sample-helm-local/my-helm-chart/my-helm-chart-1.0.0.tgz
       - name: Upload/push Helm chart to JFrog Artifactory
         shell: bash
         run: |
-          jf rt u <CHART_NAME-package_version>.tgz <JFROG_REPO_NAME>/<CHART_NAME>/
+          jf rt u <CHART_NAME-package_version>.tgz <JFROG_REPO_NAME>/<CHART_NAME>/<CHART_NAME-package_version>.tgz
 
       # Publish Build Info into JFrog Artifactory
       - name: Publish Build info With JFrog CLI
