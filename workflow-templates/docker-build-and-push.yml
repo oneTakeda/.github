@@ -38,15 +38,6 @@ jobs:
         with:
           oidc-provider-name: ${{ secrets.JFROG_OIDC_PROVIDER_NAME }} # Same for everyone and available to every repository
           oidc-audience: ${{ secrets.JFROG_OIDC_AUDIENCE }} # Same for everyone and available to every repository
-
-      # Log in to the Docker Registry
-      # Be sure to update with your project's actual registry replacing "EXAMPLE"
-      - name: Login to JFrog Artifactory
-        uses: docker/login-action@v3
-        with:
-          registry: takedaawsuseast-EXAMPLE-docker-local.jfrog.io
-          username: ${{ steps.jfrog-auth.outputs.oidc-user }}
-          password: ${{ steps.jfrog-auth.outputs.oidc-token }}
       
       # Build the image
       # Be sure to update with your project's actual naming replacing "EXAMPLE" and update the context and file path
