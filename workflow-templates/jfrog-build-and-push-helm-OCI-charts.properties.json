@@ -2,7 +2,7 @@
   "name": "onetakeda Helm OCI Charts Workflow",
   "description": "A GitHub Actions workflow to build and push Helm OCI charst into JFrog Artifactory.",
   "categories": [
-    "Helm OCI",
+    "Helm",
     "Deployment",
     "Artifacts",
     "JFrog",
