@@ -1,7 +1,8 @@
 {
-    "name": "oneTakeda SonarCloud Workflow",
-    "description": "oneTakeda Organization SonarCloud starter workflow.",
+    "name": "oneTakeda SonarQube Cloud Workflow",
+    "description": "oneTakeda Organization SonarQube Cloud starter workflow.",
     "categories": [
-        "SonarCloud"
+        "SonarCloud",
+        "SonarQube"
     ]
 }
