@@ -48,7 +48,7 @@ jobs:
         uses: actions/checkout@v4
 
       # Making use of the AWS/GitHub OIDC Connector, authenticate to AWS
-      # https://mytakeda.sharepoint.com/sites/DevOps/SitePages/Authenticating-to-AWS-from-Github-Actions-using-OIDC.aspx
+      # For setup instructions, see: https://mytakeda.sharepoint.com/sites/DevOps/SitePages/Authenticating-to-AWS-from-Github-Actions-using-OIDC.aspx
       - name: Configure AWS credentials using OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
