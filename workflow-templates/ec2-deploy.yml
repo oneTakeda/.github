@@ -1,0 +1,84 @@
+# This is a starter workflow to help you get started with deploying to EC2 instances using AWS SSM
+
+# Required Secrets:
+# AWS_ROLE_TO_ASSUME
+
+# Required Variables:
+# AWS_REGION - AWS region where your EC2 instance is located (e.g., "us-east-1")
+# EC2_INSTANCE_ID - The ID of your EC2 instance (e.g., "i-1234567890abcdef0")
+# DEPLOYMENT_COMMANDS - JSON array of shell commands to execute on the EC2 instance
+#   Example: ["echo 'Starting deployment'", "cd /opt/app", "git pull origin main", "npm install", "sudo systemctl restart myapp"]
+#   Note: Must be valid JSON array format with proper escaping
+
+# Optional Variables:
+# SSM_DOCUMENT_NAME - SSM document to use (defaults to "AWS-RunShellScript")
+# DEPLOYMENT_COMMENT - Custom comment for the deployment (defaults to repository and commit info)
+
+name: Deploy to EC2
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push events but only for the default branch
+  push:
+    branches: [ $default-branch ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "deploy"
+  deploy:
+    name: Deploy to EC2 Instance
+    
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Explicitly set permissions for the $GITHUB_TOKEN that the workflow uses
+    permissions:
+      # id-token is necessary for the AWS IAM Assume Role
+      id-token: write
+      # contents is necessary to read the repository
+      contents: read
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Making use of the AWS/GitHub OIDC Connector, authenticate to AWS
+      # https://mytakeda.sharepoint.com/sites/DevOps/SitePages/Authenticating-to-AWS-from-Github-Actions-using-OIDC.aspx
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-session-name: EC2DeployFromGitHubSession
+          aws-region: ${{ vars.AWS_REGION }}
+
+      # Deploy application to EC2 instance using SSM
+      # Commands are provided via DEPLOYMENT_COMMANDS variable
+      - name: Deploy to EC2 instance
+        id: deploy
+        env:
+          DEPLOYMENT_COMMANDS: ${{ vars.DEPLOYMENT_COMMANDS }}
+        run: |
+          COMMAND_ID=$(aws ssm send-command \
+            --document-name "${{ vars.SSM_DOCUMENT_NAME || 'AWS-RunShellScript' }}" \
+            --targets '[{"Key":"InstanceIds","Values":["${{ vars.EC2_INSTANCE_ID }}"]}]' \
+            --parameters "{\"commands\":$DEPLOYMENT_COMMANDS}" \
+            --comment "${{ vars.DEPLOYMENT_COMMENT || format('Deploying {0} from commit {1}', github.repository, github.sha) }}" \
+            --query 'Command.CommandId' \
+            --output text)
+          
+          echo "Command ID: $COMMAND_ID"
+          echo "command-id=$COMMAND_ID" >> $GITHUB_OUTPUT
+
+      # Wait for the SSM command to complete
+      - name: Wait for deployment to complete
+        run: |
+          echo "Waiting for command ${{ steps.deploy.outputs.command-id }} to complete..."
+          aws ssm wait command-executed \
+            --command-id ${{ steps.deploy.outputs.command-id }} \
+            --instance-id ${{ vars.EC2_INSTANCE_ID }}
+          echo "✅ Deployment command completed!"
