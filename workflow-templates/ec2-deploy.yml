@@ -1,14 +1,16 @@
 # This is a starter workflow to help you get started with deploying to EC2 instances using AWS SSM
 
+# INSTRUCTIONS:
+# 1. Set the required variables in your repository settings
+# 2. Modify the DEPLOYMENT_COMMANDS variable in the "Deploy to EC2 instance" step below
+# 3. Replace the example commands with your actual deployment commands
+
 # Required Secrets:
 # AWS_ROLE_TO_ASSUME
 
 # Required Variables:
 # AWS_REGION - AWS region where your EC2 instance is located (e.g., "us-east-1")
 # EC2_INSTANCE_ID - The ID of your EC2 instance (e.g., "i-1234567890abcdef0")
-# DEPLOYMENT_COMMANDS - JSON array of shell commands to execute on the EC2 instance
-#   Example: ["echo 'Starting deployment'", "cd /opt/app", "git pull origin main", "npm install", "sudo systemctl restart myapp"]
-#   Note: Must be valid JSON array format with proper escaping
 
 # Optional Variables:
 # SSM_DOCUMENT_NAME - SSM document to use (defaults to "AWS-RunShellScript")
@@ -57,12 +59,16 @@ jobs:
           aws-region: ${{ vars.AWS_REGION }}
 
       # Deploy application to EC2 instance using SSM
-      # Commands are provided via DEPLOYMENT_COMMANDS variable
+      # REPLACE THE COMMANDS BELOW WITH YOUR ACTUAL DEPLOYMENT COMMANDS
+      # Example commands for testing: ["whoami", "pwd", "ls -la", "uname -a", "date"]
       - name: Deploy to EC2 instance
         id: deploy
-        env:
-          DEPLOYMENT_COMMANDS: ${{ vars.DEPLOYMENT_COMMANDS }}
         run: |
+          # Replace the commands in the JSON array below with your deployment commands
+          DEPLOYMENT_COMMANDS='["whoami", "pwd", "ls -la", "echo '\''Replace these commands with your deployment commands'\''"]'
+          
+          echo "Running deployment commands: $DEPLOYMENT_COMMANDS"
+          
           COMMAND_ID=$(aws ssm send-command \
             --document-name "${{ vars.SSM_DOCUMENT_NAME || 'AWS-RunShellScript' }}" \
             --targets '[{"Key":"InstanceIds","Values":["${{ vars.EC2_INSTANCE_ID }}"]}]' \
@@ -78,7 +84,46 @@ jobs:
       - name: Wait for deployment to complete
         run: |
           echo "Waiting for command ${{ steps.deploy.outputs.command-id }} to complete..."
-          aws ssm wait command-executed \
+          
+          # Wait with timeout and handle failures
+          if aws ssm wait command-executed \
             --command-id ${{ steps.deploy.outputs.command-id }} \
-            --instance-id ${{ vars.EC2_INSTANCE_ID }}
-          echo "✅ Deployment command completed!"
+            --instance-id ${{ vars.EC2_INSTANCE_ID }}; then
+            echo "✅ Deployment command completed successfully!"
+            
+            # Show command output for verification
+            echo "=== Command Output ==="
+            aws ssm get-command-invocation \
+              --command-id ${{ steps.deploy.outputs.command-id }} \
+              --instance-id ${{ vars.EC2_INSTANCE_ID }} \
+              --query 'StandardOutputContent' \
+              --output text || echo "No output available"
+          else
+            echo "❌ Command failed. Getting details..."
+            
+            # Get command status details
+            echo "=== Command Status ==="
+            aws ssm get-command-invocation \
+              --command-id ${{ steps.deploy.outputs.command-id }} \
+              --instance-id ${{ vars.EC2_INSTANCE_ID }} \
+              --query '{Status:Status,StatusDetails:StatusDetails}' \
+              --output table || echo "Could not get command status"
+            
+            # Get command output
+            echo "=== Command Output ==="
+            aws ssm get-command-invocation \
+              --command-id ${{ steps.deploy.outputs.command-id }} \
+              --instance-id ${{ vars.EC2_INSTANCE_ID }} \
+              --query 'StandardOutputContent' \
+              --output text || echo "No output available"
+            
+            # Get error output  
+            echo "=== Error Output ==="
+            aws ssm get-command-invocation \
+              --command-id ${{ steps.deploy.outputs.command-id }} \
+              --instance-id ${{ vars.EC2_INSTANCE_ID }} \
+              --query 'StandardErrorContent' \
+              --output text || echo "No error output available"
+              
+            exit 1
+          fi
