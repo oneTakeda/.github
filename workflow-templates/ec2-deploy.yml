@@ -1,12 +1,16 @@
 # This is a starter workflow to help you get started with deploying to EC2 instances using AWS SSM
 
 # INSTRUCTIONS:
-# 1. Set the required variables in your repository settings
-# 2. Modify the DEPLOYMENT_COMMANDS variable in the "Deploy to EC2 instance" step below
-# 3. Replace the example commands with your actual deployment commands
+# 1. Set the required secrets and variables in your repository settings
+# 2. Ensure your EC2 instance has:
+#    - An IAM role with AmazonSSMManagedInstanceCore policy attached
+#    - SSM Agent installed and running
+#    - Network connectivity to SSM endpoints (security groups, VPC endpoints)
+# 3. Modify the deployment commands in the "Deploy to EC2 instance" step below
+# 4. Test with simple commands first, then replace with your actual deployment commands
 
 # Required Secrets:
-# AWS_ROLE_TO_ASSUME
+# AWS_ROLE_TO_ASSUME - IAM role ARN for GitHub Actions to assume
 
 # Required Variables:
 # AWS_REGION - AWS region where your EC2 instance is located (e.g., "us-east-1")
@@ -58,15 +62,29 @@ jobs:
           role-session-name: EC2DeployFromGitHubSession
           aws-region: ${{ vars.AWS_REGION }}
 
-      # Deploy application to EC2 instance using SSM
-      # REPLACE THE COMMANDS BELOW WITH YOUR ACTUAL DEPLOYMENT COMMANDS
-      # Example commands for testing: ["whoami", "pwd", "ls -la", "uname -a", "date"]
+     
       - name: Deploy to EC2 instance
         id: deploy
         run: |
-          # Replace the commands in the JSON array below with your deployment commands
-          DEPLOYMENT_COMMANDS='["whoami", "pwd", "ls -la", "echo '\''Replace these commands with your deployment commands'\''"]'
+          # REPLACE THE COMMANDS BELOW WITH YOUR DEPLOYMENT COMMANDS
+          # Each command runs sequentially on the EC2 instance
+          # Use ${{ github.token }} for private repository access (no additional secrets needed)
           
+          cat > deployment_commands.json << 'EOF'
+          [
+            "echo '=== Starting deployment ==='",
+            "whoami",
+            "pwd",
+            "cd /tmp", 
+            "echo '=== Cloning repository ==='",
+            "git clone https://${{ github.token }}@github.com/oneTakedaSbx/devops-poc-mcp.git",
+            "ls -la devops-poc-mcp",
+            "echo '=== Deployment completed successfully ==='",
+            "date"
+          ]
+          EOF
+          
+          DEPLOYMENT_COMMANDS=$(cat deployment_commands.json)
           echo "Running deployment commands: $DEPLOYMENT_COMMANDS"
           
           COMMAND_ID=$(aws ssm send-command \
