@@ -1,0 +1,10 @@
+{
+    "name": "oneTakeda EC2 Deployment Workflow",
+    "description": "oneTakeda Organization EC2 deployment starter workflow using AWS SSM for secure deployments.",
+    "categories": [
+        "AWS",
+        "EC2",
+        "Deployment",
+        "SSM"
+    ]
+}
